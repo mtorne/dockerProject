@@ -42,8 +42,9 @@ pipeline {
                 sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                 sh 'chmod u+x ./kubectl'
                 sh 'echo $PATH'
-                sh '/usr/local/bin/kubectl --help'
                 sh 'export PATH=$PATH:/usr/local/bin/'
+                sh 'kubectl --help'
+
             }
           } 
         }
@@ -51,6 +52,7 @@ pipeline {
         stage('Deploy to GKE') {
             steps{
                 sh "sed -i 's/hellowhale:latest/hellowhale:${env.BUILD_ID}/g' hellowhale.yml"
+                sh 'export PATH=$PATH:/usr/local/bin/'
                 step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'hellowhale.yml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
             }
         }
