@@ -1,6 +1,12 @@
 pipeline {
 
   agent any
+      environment {
+        PROJECT_ID = 'emerald-trilogy-313008'
+        CLUSTER_NAME = 'cluster-1'
+        LOCATION = 'europe-west6-a'
+        CREDENTIALS_ID = 'emerald-trilogy-313008'
+    }
 
   stages {
 
@@ -29,14 +35,14 @@ pipeline {
             }
         }
 
-    
-    stage('Deploy App') {
-      steps {
-        script {
-          kubernetesDeploy(configs: "hellowhale.yml", kubeconfigId: "mykubeconfig")
+        stage('Deploy to GKE') {
+            steps{
+                sh "sed -i 's/hellowhale:latest/hellowhale:${env.BUILD_ID}/g' hellowhale.yml"
+                step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'hellowhale.yml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+            }
         }
-      }
-    }
+    
+
 
   }
 
